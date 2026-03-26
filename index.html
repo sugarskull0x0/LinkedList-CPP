@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays vs Linked Lists — A C++ Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --text: #2c2825;
+    --text-muted: #6b6560;
+    --accent: #c44b2b;
+    --accent-light: #fef0ec;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --code-comment: #6c7086;
+    --code-keyword: #cba6f7;
+    --code-string: #a6e3a1;
+    --code-type: #89b4fa;
+    --code-func: #f9e2af;
+    --code-number: #fab387;
+    --border: #e8e2dc;
+    --card-bg: #ffffff;
+    --highlight: #fff8e1;
+    --diagram-node: #3b3835;
+    --diagram-ptr: #c44b2b;
+    --diagram-null: #a0978f;
+    --pro: #2d6a4f;
+    --pro-bg: #f0faf4;
+    --con: #9d3c1a;
+    --con-bg: #fef5f0;
+    --summary-bg: #f5f0eb;
+    --summary-border: #c44b2b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px);
+    pointer-events: none;
+  }
+
+  .header h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header h1 span { color: var(--accent); }
+
+  .header .subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.05rem;
+    color: var(--code-comment);
+    margin-top: 12px;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header .lang-badge {
+    display: inline-block;
+    background: rgba(196, 75, 43, 0.15);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-top: 18px;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(196, 75, 43, 0.25);
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  .section {
+    margin: 56px 0;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 16px; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 10px;
+    margin: 24px 0;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  .code-block .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .code-block .code-header .dots {
+    display: flex;
+    gap: 7px;
+  }
+
+  .code-block .code-header .dots span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .code-block .code-header .dots span:nth-child(1) { background: #ed6a5e; }
+  .code-block .code-header .dots span:nth-child(2) { background: #f5bf4f; }
+  .code-block .code-header .dots span:nth-child(3) { background: #62c554; }
+
+  .code-block .code-header .filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--code-comment);
+  }
+
+  .code-block pre {
+    padding: 20px 22px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--code-text);
+    tab-size: 4;
+  }
+
+  .code-block pre .kw { color: var(--code-keyword); }
+  .code-block pre .tp { color: var(--code-type); }
+  .code-block pre .fn { color: var(--code-func); }
+  .code-block pre .st { color: var(--code-string); }
+  .code-block pre .cm { color: var(--code-comment); font-style: italic; }
+  .code-block pre .nm { color: var(--code-number); }
+  .code-block pre .op { color: #89dceb; }
+
+  .diagram-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-box .diagram-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .diagram-box svg { display: block; margin: 0 auto; }
+
+  .analogy {
+    background: var(--highlight);
+    border-left: 4px solid #e6b800;
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-style: italic;
+  }
+
+  .analogy::before {
+    content: '💡';
+    margin-right: 8px;
+    font-style: normal;
+  }
+
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 600px) {
+    .pros-cons { grid-template-columns: 1fr; }
+  }
+
+  .pros-cons .pro-card, .pros-cons .con-card {
+    padding: 18px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  .pro-card {
+    background: var(--pro-bg);
+    border: 1px solid rgba(45,106,79,0.15);
+  }
+
+  .pro-card .label {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    color: var(--pro);
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .con-card {
+    background: var(--con-bg);
+    border: 1px solid rgba(157,60,26,0.15);
+  }
+
+  .con-card .label {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    color: var(--con);
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .pro-card ul, .con-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .pro-card ul li, .con-card ul li {
+    padding: 4px 0 4px 20px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .pro-card ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--pro);
+    font-weight: 700;
+  }
+
+  .con-card ul li::before {
+    content: '✗';
+    position: absolute;
+    left: 0;
+    color: var(--con);
+    font-weight: 700;
+  }
+
+  .summary-box {
+    background: var(--summary-bg);
+    border-left: 4px solid var(--summary-border);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin: 28px 0;
+  }
+
+  .summary-box .summary-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .summary-box p { margin-bottom: 6px; font-size: 0.95rem; }
+
+  .use-case-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 700px) {
+    .use-case-grid { grid-template-columns: 1fr; }
+  }
+
+  .use-case-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 18px;
+  }
+
+  .use-case-card .uc-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+
+  .use-case-card ul {
+    list-style: none;
+    padding: 0;
+    font-size: 0.92rem;
+  }
+
+  .use-case-card ul li {
+    padding: 4px 0 4px 16px;
+    position: relative;
+  }
+
+  .use-case-card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted);
+  }
+
+  .divider {
+    border: none;
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 40px 28px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 40px 0;
+  }
+
+  .toc .toc-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .toc ol {
+    padding-left: 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+  }
+
+  .toc ol li { padding: 4px 0; }
+  .toc ol li a { color: var(--accent); text-decoration: none; }
+  .toc ol li a:hover { text-decoration: underline; }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.92rem;
+  }
+
+  .comparison-table th, .comparison-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comparison-table th {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    background: var(--summary-bg);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .comparison-table td:first-child {
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .complexity { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+  .fast { color: var(--pro); font-weight: 600; }
+  .slow { color: var(--con); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Arrays <span>vs</span> Linked Lists</h1>
+  <p class="subtitle">Single &amp; Double Linked Lists — A Complete C++ Tutorial</p>
+  <span class="lang-badge">C++ Implementation</span>
+  <p class="subtitle" style="margin-top:20px; color:#cdd6f4; font-size:0.95rem;">By <strong style="color:#fff;">Khaled Sokkar</strong> — Teaching Assistant &amp; Offensive Security Engineer</p>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ol>
+      <li><a href="#concepts">Concepts — What Are These Data Structures?</a></li>
+      <li><a href="#array-memory">Array Pros &amp; Cons (Memory Behavior)</a></li>
+      <li><a href="#ll-memory">Linked List Pros &amp; Cons (Memory Behavior)</a></li>
+      <li><a href="#array-code">Code Examples — Arrays</a></li>
+      <li><a href="#sll-code">Code Implementation — Singly Linked List</a></li>
+      <li><a href="#dll-code">Code Implementation — Doubly Linked List</a></li>
+      <li><a href="#comparison">Big-O Comparison Table</a></li>
+      <li><a href="#use-cases">Real-World Use Cases</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: CONCEPTS -->
+  <!-- ============================================================ -->
+  <div class="section" id="concepts">
+    <div class="section-label">Section 01</div>
+    <h2>Concepts — What Are These Data Structures?</h2>
+
+    <p>Before we write a single line of code, let's build solid mental models for each structure. A <strong>data structure</strong> is simply a way of organizing data in memory so we can use it efficiently. The choice of data structure determines how fast we can read, insert, and delete information — so getting this right matters.</p>
+
+    <h3>Arrays</h3>
+    <p>An <strong>array</strong> is a fixed-size, ordered collection of elements stored in <em>contiguous</em> (side-by-side) memory locations. When you declare <code>int arr[5];</code> in C++, the compiler reserves five consecutive <code>int</code>-sized slots in memory. Because they're contiguous, you can jump to any element instantly using its index.</p>
+
+    <div class="analogy">Think of an array like a row of numbered mailboxes at an apartment building. Mailbox 0, Mailbox 1, Mailbox 2 — they sit right next to each other. If you want Mailbox 7, you don't have to walk past 0 through 6; you just go directly to position 7 because you know the exact spacing.</div>
+
+    <h3>Singly Linked List</h3>
+    <p>A <strong>singly linked list</strong> is a chain of <em>nodes</em> where each node contains two things: the data it stores, and a pointer to the <em>next</em> node in the chain. The first node is called the <strong>head</strong>. The last node's "next" pointer is <code>nullptr</code>, signaling the end of the list. Nodes can live <em>anywhere</em> in memory — they don't need to be adjacent.</p>
+
+    <h3>Doubly Linked List</h3>
+    <p>A <strong>doubly linked list</strong> is the same idea, but each node has <em>two</em> pointers: one pointing to the <strong>next</strong> node and one pointing to the <strong>previous</strong> node. This lets you traverse the list in both directions. You typically keep track of both the <strong>head</strong> (first node) and the <strong>tail</strong> (last node).</p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">Visual: Array vs Singly vs Doubly Linked List</div>
+      <svg viewBox="0 0 760 340" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace">
+        <!-- Array -->
+        <text x="20" y="28" font-size="12" fill="#6b6560" font-weight="600">ARRAY (contiguous memory)</text>
+        <rect x="20" y="40" width="80" height="44" rx="4" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="60" y="67" text-anchor="middle" font-size="14" fill="#3b3835">10</text>
+        <text x="60" y="80" text-anchor="middle" font-size="9" fill="#a0978f">[0]</text>
+        <rect x="100" y="40" width="80" height="44" rx="4" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="140" y="67" text-anchor="middle" font-size="14" fill="#3b3835">20</text>
+        <text x="140" y="80" text-anchor="middle" font-size="9" fill="#a0978f">[1]</text>
+        <rect x="180" y="40" width="80" height="44" rx="4" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="220" y="67" text-anchor="middle" font-size="14" fill="#3b3835">30</text>
+        <text x="220" y="80" text-anchor="middle" font-size="9" fill="#a0978f">[2]</text>
+        <rect x="260" y="40" width="80" height="44" rx="4" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="300" y="67" text-anchor="middle" font-size="14" fill="#3b3835">40</text>
+        <text x="300" y="80" text-anchor="middle" font-size="9" fill="#a0978f">[3]</text>
+        <rect x="340" y="40" width="80" height="44" rx="4" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="380" y="67" text-anchor="middle" font-size="14" fill="#3b3835">50</text>
+        <text x="380" y="80" text-anchor="middle" font-size="9" fill="#a0978f">[4]</text>
+        <text x="460" y="67" font-size="10" fill="#a0978f">← contiguous in RAM</text>
+
+        <!-- Singly Linked List -->
+        <text x="20" y="138" font-size="12" fill="#6b6560" font-weight="600">SINGLY LINKED LIST (scattered in memory)</text>
+        <text x="20" y="164" font-size="10" fill="#c44b2b" font-weight="600">head</text>
+        <line x1="46" y1="166" x2="46" y2="176" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <rect x="20" y="178" width="100" height="40" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="70" y1="178" x2="70" y2="218" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="45" y="203" text-anchor="middle" font-size="13" fill="#3b3835">10</text>
+        <text x="95" y="203" text-anchor="middle" font-size="10" fill="#c44b2b">→</text>
+        <line x1="120" y1="198" x2="155" y2="198" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <rect x="160" y="178" width="100" height="40" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="210" y1="178" x2="210" y2="218" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="185" y="203" text-anchor="middle" font-size="13" fill="#3b3835">20</text>
+        <text x="235" y="203" text-anchor="middle" font-size="10" fill="#c44b2b">→</text>
+        <line x1="260" y1="198" x2="295" y2="198" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <rect x="300" y="178" width="100" height="40" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="350" y1="178" x2="350" y2="218" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="325" y="203" text-anchor="middle" font-size="13" fill="#3b3835">30</text>
+        <text x="375" y="200" text-anchor="middle" font-size="9" fill="#a0978f">null</text>
+
+        <!-- Doubly Linked List -->
+        <text x="20" y="268" font-size="12" fill="#6b6560" font-weight="600">DOUBLY LINKED LIST (bidirectional traversal)</text>
+        <text x="20" y="290" font-size="10" fill="#c44b2b" font-weight="600">head</text>
+        <line x1="46" y1="292" x2="46" y2="300" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <rect x="20" y="304" width="120" height="34" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="30" y="325" font-size="9" fill="#a0978f">n</text>
+        <text x="80" y="325" text-anchor="middle" font-size="13" fill="#3b3835">10</text>
+        <text x="130" y="325" font-size="9" fill="#a0978f">n</text>
+        <!-- arrows between doubly linked nodes -->
+        <line x1="140" y1="316" x2="175" y2="316" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <line x1="175" y1="326" x2="140" y2="326" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+        <rect x="180" y="304" width="120" height="34" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="190" y="325" font-size="9" fill="#3b82f6">p</text>
+        <text x="240" y="325" text-anchor="middle" font-size="13" fill="#3b3835">20</text>
+        <text x="290" y="325" font-size="9" fill="#c44b2b">n</text>
+        <line x1="300" y1="316" x2="335" y2="316" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <line x1="335" y1="326" x2="300" y2="326" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+        <rect x="340" y="304" width="120" height="34" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <text x="350" y="325" font-size="9" fill="#3b82f6">p</text>
+        <text x="400" y="325" text-anchor="middle" font-size="13" fill="#3b3835">30</text>
+        <text x="450" y="325" font-size="9" fill="#a0978f">n</text>
+        <text x="490" y="290" font-size="10" fill="#c44b2b" font-weight="600">tail</text>
+        <line x1="500" y1="292" x2="500" y2="300" stroke="#c44b2b" stroke-width="1.5"/>
+        <line x1="500" y1="300" x2="460" y2="308" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+
+        <!-- Key -->
+        <text x="560" y="316" font-size="9" fill="#c44b2b">n = next</text>
+        <text x="560" y="330" font-size="9" fill="#3b82f6">p = prev</text>
+
+        <defs>
+          <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c44b2b"/></marker>
+          <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3b82f6"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>An <strong>array</strong> stores elements contiguously (side-by-side) and uses index-based access. A <strong>singly linked list</strong> chains nodes with forward-only pointers. A <strong>doubly linked list</strong> adds backward pointers for bidirectional traversal. The fundamental trade-off is between <em>random access speed</em> (arrays win) and <em>insertion/deletion flexibility</em> (linked lists win).</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: ARRAY PROS & CONS -->
+  <!-- ============================================================ -->
+  <div class="section" id="array-memory">
+    <div class="section-label">Section 02</div>
+    <h2>Array Pros &amp; Cons (Memory Behavior)</h2>
+
+    <p>When you write <code>int arr[5];</code>, the compiler allocates 5 × 4 = 20 bytes of <strong>contiguous memory</strong>. "Contiguous" means every byte is directly adjacent — no gaps. This has profound performance implications.</p>
+
+    <h3>Why Contiguous Memory Matters</h3>
+    <p>Modern CPUs don't fetch one byte at a time from RAM — they pull entire <strong>cache lines</strong> (usually 64 bytes). When you access <code>arr[0]</code>, the CPU loads <code>arr[0]</code> through <code>arr[15]</code> (or more) into the cache in one shot. When you then access <code>arr[1]</code>, it's already in the cache — a <em>cache hit</em>. This is called <strong>spatial locality</strong>, and it makes sequential array traversals blazingly fast.</p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">Memory Layout: Array of 5 Integers</div>
+      <svg viewBox="0 0 700 110" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace">
+        <text x="20" y="20" font-size="10" fill="#a0978f">ADDRESS:</text>
+        <text x="110" y="20" font-size="10" fill="#a0978f">0x1000</text>
+        <text x="222" y="20" font-size="10" fill="#a0978f">0x1004</text>
+        <text x="334" y="20" font-size="10" fill="#a0978f">0x1008</text>
+        <text x="446" y="20" font-size="10" fill="#a0978f">0x100C</text>
+        <text x="558" y="20" font-size="10" fill="#a0978f">0x1010</text>
+
+        <rect x="100" y="30" width="112" height="45" rx="3" fill="#fef0ec" stroke="#c44b2b" stroke-width="1.5"/>
+        <text x="156" y="58" text-anchor="middle" font-size="16" font-weight="600" fill="#c44b2b">10</text>
+        <rect x="212" y="30" width="112" height="45" rx="3" fill="#fef0ec" stroke="#c44b2b" stroke-width="1.5"/>
+        <text x="268" y="58" text-anchor="middle" font-size="16" font-weight="600" fill="#c44b2b">20</text>
+        <rect x="324" y="30" width="112" height="45" rx="3" fill="#fef0ec" stroke="#c44b2b" stroke-width="1.5"/>
+        <text x="380" y="58" text-anchor="middle" font-size="16" font-weight="600" fill="#c44b2b">30</text>
+        <rect x="436" y="30" width="112" height="45" rx="3" fill="#fef0ec" stroke="#c44b2b" stroke-width="1.5"/>
+        <text x="492" y="58" text-anchor="middle" font-size="16" font-weight="600" fill="#c44b2b">40</text>
+        <rect x="548" y="30" width="112" height="45" rx="3" fill="#fef0ec" stroke="#c44b2b" stroke-width="1.5"/>
+        <text x="604" y="58" text-anchor="middle" font-size="16" font-weight="600" fill="#c44b2b">50</text>
+
+        <text x="20" y="58" font-size="10" fill="#3b3835" font-weight="600">DATA:</text>
+        <text x="100" y="94" font-size="10" fill="#6b6560">← each slot = 4 bytes (sizeof int) →</text>
+        <text x="460" y="94" font-size="10" fill="#2d6a4f" font-weight="600">Total: 20 bytes, zero overhead</text>
+      </svg>
+    </div>
+
+    <p>Random access is <span class="complexity fast">O(1)</span> because the address of any element can be calculated with a simple formula: <code>address = base_address + (index × sizeof(element))</code>. To find <code>arr[3]</code>, the CPU computes <code>0x1000 + (3 × 4) = 0x100C</code> and jumps straight there.</p>
+
+    <div class="analogy">Contiguous memory is like a row of seats in a cinema. If you know the row starts at Seat 1, finding Seat 47 is trivial — you don't scan every seat, you just count 46 seats over. But if you need to squeeze someone into the middle of a full row, everyone past that point has to shift over one seat.</div>
+
+    <div class="pros-cons">
+      <div class="pro-card">
+        <div class="label">Advantages</div>
+        <ul>
+          <li><strong>O(1) random access</strong> — jump to any element by index instantly</li>
+          <li><strong>Cache-friendly</strong> — sequential access benefits from hardware prefetching</li>
+          <li><strong>Zero pointer overhead</strong> — all memory goes to actual data</li>
+          <li><strong>Simple syntax</strong> — easy to declare, read, and use</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <div class="label">Disadvantages</div>
+        <ul>
+          <li><strong>Fixed size</strong> — C-style arrays can't grow after declaration</li>
+          <li><strong>Expensive insertion/deletion</strong> — O(n) shifting of elements</li>
+          <li><strong>Wasteful if sparse</strong> — allocated memory is used even if slots are empty</li>
+          <li><strong>Fragmentation risk</strong> — large contiguous blocks may fail to allocate</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>Arrays are the <strong>fastest structure for reading data by position</strong> thanks to contiguous memory and O(1) indexing. They struggle with insertions and deletions in the middle because every element after the change must shift. Choose arrays when your data has a <em>predictable size</em> and you need <em>frequent, fast lookups</em>.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: LINKED LIST PROS & CONS -->
+  <!-- ============================================================ -->
+  <div class="section" id="ll-memory">
+    <div class="section-label">Section 03</div>
+    <h2>Linked List Pros &amp; Cons (Memory Behavior)</h2>
+
+    <p>Linked list nodes are allocated individually with <code>new</code>, so they can live <em>anywhere</em> in memory — address 0x2000, 0x5FA0, 0x8120 — completely scattered. Each node carries its data <em>plus</em> one or two pointers to connect itself to the chain.</p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">Memory Layout: Singly Linked List (3 Nodes, Scattered)</div>
+      <svg viewBox="0 0 700 160" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace">
+        <!-- Node at 0x2000 -->
+        <text x="40" y="20" font-size="10" fill="#a0978f">0x2000</text>
+        <rect x="30" y="28" width="140" height="44" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="100" y1="28" x2="100" y2="72" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="65" y="55" text-anchor="middle" font-size="14" fill="#3b3835" font-weight="600">10</text>
+        <text x="135" y="55" text-anchor="middle" font-size="9" fill="#c44b2b">0x5FA0</text>
+        <text x="65" y="68" text-anchor="middle" font-size="8" fill="#a0978f">data</text>
+        <text x="135" y="68" text-anchor="middle" font-size="8" fill="#a0978f">next</text>
+
+        <!-- Node at 0x5FA0 (offset to show non-contiguous) -->
+        <text x="305" y="20" font-size="10" fill="#a0978f">0x5FA0</text>
+        <rect x="295" y="28" width="140" height="44" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="365" y1="28" x2="365" y2="72" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="330" y="55" text-anchor="middle" font-size="14" fill="#3b3835" font-weight="600">20</text>
+        <text x="400" y="55" text-anchor="middle" font-size="9" fill="#c44b2b">0x8120</text>
+        <text x="330" y="68" text-anchor="middle" font-size="8" fill="#a0978f">data</text>
+        <text x="400" y="68" text-anchor="middle" font-size="8" fill="#a0978f">next</text>
+
+        <!-- Node at 0x8120 -->
+        <text x="560" y="20" font-size="10" fill="#a0978f">0x8120</text>
+        <rect x="550" y="28" width="140" height="44" rx="6" fill="#fff" stroke="#3b3835" stroke-width="1.5"/>
+        <line x1="620" y1="28" x2="620" y2="72" stroke="#e8e2dc" stroke-width="1"/>
+        <text x="585" y="55" text-anchor="middle" font-size="14" fill="#3b3835" font-weight="600">30</text>
+        <text x="655" y="55" text-anchor="middle" font-size="9" fill="#a0978f">null</text>
+        <text x="585" y="68" text-anchor="middle" font-size="8" fill="#a0978f">data</text>
+        <text x="655" y="68" text-anchor="middle" font-size="8" fill="#a0978f">next</text>
+
+        <!-- Arrows -->
+        <path d="M170 50 C 220 50, 250 50, 293 50" fill="none" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+        <path d="M435 50 C 480 50, 510 50, 548 50" fill="none" stroke="#c44b2b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+
+        <!-- Annotation -->
+        <text x="30" y="105" font-size="10" fill="#6b6560">Each node: 4 bytes (data) + 8 bytes (pointer on 64-bit) = 12 bytes</text>
+        <text x="30" y="120" font-size="10" fill="#9d3c1a" font-weight="600">Pointer overhead: 66% extra memory for this tiny example</text>
+        <text x="30" y="140" font-size="10" fill="#6b6560">Nodes scattered in RAM → poor cache locality → more cache misses</text>
+      </svg>
+    </div>
+
+    <div class="analogy">A linked list is like a scavenger hunt. Each clue (node) tells you where to find the next clue — but the clues are hidden all over the building. You can't skip ahead; you must follow each clue to the next. With a doubly linked list, each clue also tells you where the <em>previous</em> one was, so you can retrace your steps.</div>
+
+    <h3>Singly Linked List Trade-offs</h3>
+    <p>With only a forward pointer, you can only traverse head-to-tail. Inserting or deleting at the <em>head</em> is <span class="complexity fast">O(1)</span> — just rewire one pointer. But inserting at position <em>k</em> requires walking <em>k</em> steps first to find the right spot, making it <span class="complexity slow">O(n)</span> for the search plus <span class="complexity fast">O(1)</span> for the actual re-linking.</p>
+
+    <h3>Doubly Linked List Trade-offs</h3>
+    <p>The extra <code>prev</code> pointer doubles the pointer overhead (now 16 bytes per node on a 64-bit system), but gives you two superpowers: you can delete a node in <span class="complexity fast">O(1)</span> if you already have a pointer to it (because you can reach both neighbors), and you can traverse backwards from the tail. Inserting/deleting at both head <em>and</em> tail becomes <span class="complexity fast">O(1)</span>.</p>
+
+    <div class="pros-cons">
+      <div class="pro-card">
+        <div class="label">Advantages</div>
+        <ul>
+          <li><strong>Dynamic size</strong> — grows and shrinks freely at runtime</li>
+          <li><strong>O(1) insertion/deletion</strong> at known positions (no shifting)</li>
+          <li><strong>No wasted space</strong> — allocates exactly as many nodes as needed</li>
+          <li><strong>No large contiguous block needed</strong> — uses scattered memory</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <div class="label">Disadvantages</div>
+        <ul>
+          <li><strong>No random access</strong> — O(n) to reach element k</li>
+          <li><strong>Pointer overhead</strong> — 8–16 extra bytes per node</li>
+          <li><strong>Poor cache locality</strong> — scattered nodes cause cache misses</li>
+          <li><strong>Memory fragmentation</strong> — many small allocations stress the allocator</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>Linked lists trade <em>access speed</em> for <em>modification flexibility</em>. They shine when you insert and delete frequently, especially at the ends. The doubly linked variant is more versatile but uses more memory. Both suffer from poor cache performance compared to arrays because nodes are scattered in RAM.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: ARRAY CODE -->
+  <!-- ============================================================ -->
+  <div class="section" id="array-code">
+    <div class="section-label">Section 04</div>
+    <h2>Code Examples — Arrays in C++</h2>
+
+    <p>Let's see arrays in action. We'll cover creation, access, insertion (shifting), and deletion (shifting). We'll use C-style arrays first, then show how <code>std::vector</code> handles dynamic sizing.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="filename">arrays_demo.cpp</span>
+      </div>
+<pre><span class="cm">// ============================================================</span>
+<span class="cm">// ARRAYS IN C++ — Creation, Access, Insertion, Deletion</span>
+<span class="cm">// ============================================================</span>
+<span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// ---- Helper: Print an array ----</span>
+<span class="tp">void</span> <span class="fn">printArray</span>(<span class="tp">int</span> arr[], <span class="tp">int</span> size) {
+    cout <span class="op">&lt;&lt;</span> <span class="st">"[ "</span>;
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; size; i++) {
+        cout <span class="op">&lt;&lt;</span> arr[i];
+        <span class="kw">if</span> (i &lt; size - <span class="nm">1</span>) cout <span class="op">&lt;&lt;</span> <span class="st">", "</span>;
+    }
+    cout <span class="op">&lt;&lt;</span> <span class="st">" ]"</span> <span class="op">&lt;&lt;</span> endl;
+}
+
+<span class="cm">// ---- Insert a value at a given index (shifts elements right) ----</span>
+<span class="cm">// 'size' is the current number of elements; 'capacity' is max.</span>
+<span class="tp">void</span> <span class="fn">insertAt</span>(<span class="tp">int</span> arr[], <span class="tp">int</span>&amp; size, <span class="tp">int</span> capacity, <span class="tp">int</span> index, <span class="tp">int</span> value) {
+    <span class="kw">if</span> (size >= capacity) {
+        cout <span class="op">&lt;&lt;</span> <span class="st">"Error: array is full!"</span> <span class="op">&lt;&lt;</span> endl;
+        <span class="kw">return</span>;
+    }
+    <span class="kw">if</span> (index &lt; <span class="nm">0</span> || index &gt; size) {
+        cout <span class="op">&lt;&lt;</span> <span class="st">"Error: index out of bounds!"</span> <span class="op">&lt;&lt;</span> endl;
+        <span class="kw">return</span>;
+    }
+    <span class="cm">// Shift everything from 'index' onward one position to the right.</span>
+    <span class="cm">// This is the expensive O(n) part.</span>
+    <span class="kw">for</span> (<span class="tp">int</span> i = size; i &gt; index; i--) {
+        arr[i] = arr[i - <span class="nm">1</span>];
+    }
+    arr[index] = value;
+    size++;
+}
+
+<span class="cm">// ---- Delete the element at a given index (shifts elements left) ----</span>
+<span class="tp">void</span> <span class="fn">deleteAt</span>(<span class="tp">int</span> arr[], <span class="tp">int</span>&amp; size, <span class="tp">int</span> index) {
+    <span class="kw">if</span> (index &lt; <span class="nm">0</span> || index >= size) {
+        cout <span class="op">&lt;&lt;</span> <span class="st">"Error: index out of bounds!"</span> <span class="op">&lt;&lt;</span> endl;
+        <span class="kw">return</span>;
+    }
+    <span class="cm">// Shift everything after 'index' one position to the left.</span>
+    <span class="kw">for</span> (<span class="tp">int</span> i = index; i &lt; size - <span class="nm">1</span>; i++) {
+        arr[i] = arr[i + <span class="nm">1</span>];
+    }
+    size--;
+}
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="cm">// --- 1. CREATION ---</span>
+    <span class="kw">const</span> <span class="tp">int</span> CAPACITY = <span class="nm">10</span>;    <span class="cm">// Maximum slots available</span>
+    <span class="tp">int</span> arr[CAPACITY] = {<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>};
+    <span class="tp">int</span> size = <span class="nm">5</span>;              <span class="cm">// Currently holding 5 elements</span>
+
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Initial array: "</span>;
+    <span class="fn">printArray</span>(arr, size);      <span class="cm">// [ 10, 20, 30, 40, 50 ]</span>
+
+    <span class="cm">// --- 2. ACCESS (O(1) — direct index) ---</span>
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Element at index 2: "</span> <span class="op">&lt;&lt;</span> arr[<span class="nm">2</span>] <span class="op">&lt;&lt;</span> endl;   <span class="cm">// 30</span>
+
+    <span class="cm">// --- 3. INSERTION at index 2 (O(n) — must shift) ---</span>
+    <span class="fn">insertAt</span>(arr, size, CAPACITY, <span class="nm">2</span>, <span class="nm">25</span>);
+    cout <span class="op">&lt;&lt;</span> <span class="st">"After inserting 25 at index 2: "</span>;
+    <span class="fn">printArray</span>(arr, size);      <span class="cm">// [ 10, 20, 25, 30, 40, 50 ]</span>
+
+    <span class="cm">// --- 4. DELETION at index 0 (O(n) — must shift) ---</span>
+    <span class="fn">deleteAt</span>(arr, size, <span class="nm">0</span>);
+    cout <span class="op">&lt;&lt;</span> <span class="st">"After deleting index 0: "</span>;
+    <span class="fn">printArray</span>(arr, size);      <span class="cm">// [ 20, 25, 30, 40, 50 ]</span>
+
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+    </div>
+
+    <p>Notice the pattern: accessing is instant, but inserting and deleting require a loop to shift elements. That loop is what gives arrays their <span class="complexity slow">O(n)</span> insertion/deletion cost.</p>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>Array code is straightforward but you must manually manage shifting for insertions and deletions. In practice, <code>std::vector</code> automates this (it's a dynamic array under the hood), but the O(n) shifting cost remains. Understanding the raw mechanics helps you reason about when arrays are the right choice.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: SINGLY LINKED LIST CODE -->
+  <!-- ============================================================ -->
+  <div class="section" id="sll-code">
+    <div class="section-label">Section 05</div>
+    <h2>Code Implementation — Singly Linked List</h2>
+
+    <p>Here's a complete, working singly linked list with insert (head, tail, at position), delete, search, and traversal. Each operation is commented to explain the pointer manipulation.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="filename">singly_linked_list.cpp</span>
+      </div>
+<pre><span class="cm">// ============================================================</span>
+<span class="cm">// SINGLY LINKED LIST — Complete C++ Implementation</span>
+<span class="cm">// ============================================================</span>
+<span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// ---- Node structure: data + one pointer ----</span>
+<span class="kw">struct</span> <span class="tp">Node</span> {
+    <span class="tp">int</span>   data;
+    <span class="tp">Node</span>* next;
+
+    <span class="cm">// Constructor for convenient allocation</span>
+    <span class="fn">Node</span>(<span class="tp">int</span> val) : data(val), next(<span class="kw">nullptr</span>) {}
+};
+
+<span class="cm">// ---- Singly Linked List class ----</span>
+<span class="kw">class</span> <span class="tp">SinglyLinkedList</span> {
+<span class="kw">private</span>:
+    <span class="tp">Node</span>* head;
+
+<span class="kw">public</span>:
+    <span class="fn">SinglyLinkedList</span>() : head(<span class="kw">nullptr</span>) {}
+
+    <span class="cm">// ---- INSERT AT HEAD — O(1) ----</span>
+    <span class="cm">// Create a new node, point it to the old head, update head.</span>
+    <span class="tp">void</span> <span class="fn">insertAtHead</span>(<span class="tp">int</span> val) {
+        <span class="tp">Node</span>* newNode = <span class="kw">new</span> <span class="tp">Node</span>(val);
+        newNode-&gt;next = head;   <span class="cm">// New node points to old head</span>
+        head = newNode;          <span class="cm">// Head now points to new node</span>
+    }
+
+    <span class="cm">// ---- INSERT AT TAIL — O(n) ----</span>
+    <span class="cm">// Must traverse the entire list to find the last node.</span>
+    <span class="tp">void</span> <span class="fn">insertAtTail</span>(<span class="tp">int</span> val) {
+        <span class="tp">Node</span>* newNode = <span class="kw">new</span> <span class="tp">Node</span>(val);
+        <span class="kw">if</span> (!head) {             <span class="cm">// Empty list: new node becomes head</span>
+            head = newNode;
+            <span class="kw">return</span>;
+        }
+        <span class="tp">Node</span>* curr = head;
+        <span class="kw">while</span> (curr-&gt;next) {     <span class="cm">// Walk to the last node</span>
+            curr = curr-&gt;next;
+        }
+        curr-&gt;next = newNode;    <span class="cm">// Last node now points to new node</span>
+    }
+
+    <span class="cm">// ---- INSERT AT POSITION — O(n) ----</span>
+    <span class="cm">// Position 0 = head. Walk to position-1, then re-link.</span>
+    <span class="tp">void</span> <span class="fn">insertAtPosition</span>(<span class="tp">int</span> val, <span class="tp">int</span> pos) {
+        <span class="kw">if</span> (pos == <span class="nm">0</span>) { <span class="fn">insertAtHead</span>(val); <span class="kw">return</span>; }
+
+        <span class="tp">Node</span>* curr = head;
+        <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; pos - <span class="nm">1</span> &amp;&amp; curr; i++) {
+            curr = curr-&gt;next;   <span class="cm">// Walk to the node BEFORE target position</span>
+        }
+        <span class="kw">if</span> (!curr) {
+            cout <span class="op">&lt;&lt;</span> <span class="st">"Position out of range!"</span> <span class="op">&lt;&lt;</span> endl;
+            <span class="kw">return</span>;
+        }
+        <span class="tp">Node</span>* newNode = <span class="kw">new</span> <span class="tp">Node</span>(val);
+        newNode-&gt;next = curr-&gt;next;  <span class="cm">// New node points to what came after</span>
+        curr-&gt;next = newNode;        <span class="cm">// Previous node now points to new node</span>
+    }
+
+    <span class="cm">// ---- DELETE BY VALUE — O(n) ----</span>
+    <span class="cm">// Find the node with matching data, re-link, then free memory.</span>
+    <span class="tp">void</span> <span class="fn">deleteByValue</span>(<span class="tp">int</span> val) {
+        <span class="kw">if</span> (!head) <span class="kw">return</span>;
+
+        <span class="cm">// Special case: deleting the head</span>
+        <span class="kw">if</span> (head-&gt;data == val) {
+            <span class="tp">Node</span>* temp = head;
+            head = head-&gt;next;   <span class="cm">// Move head forward</span>
+            <span class="kw">delete</span> temp;          <span class="cm">// Free old head's memory</span>
+            <span class="kw">return</span>;
+        }
+
+        <span class="cm">// General case: find node BEFORE the one to delete</span>
+        <span class="tp">Node</span>* curr = head;
+        <span class="kw">while</span> (curr-&gt;next &amp;&amp; curr-&gt;next-&gt;data != val) {
+            curr = curr-&gt;next;
+        }
+        <span class="kw">if</span> (curr-&gt;next) {
+            <span class="tp">Node</span>* temp = curr-&gt;next;
+            curr-&gt;next = temp-&gt;next;  <span class="cm">// Skip over the deleted node</span>
+            <span class="kw">delete</span> temp;              <span class="cm">// Free its memory</span>
+        }
+    }
+
+    <span class="cm">// ---- SEARCH — O(n) ----</span>
+    <span class="tp">bool</span> <span class="fn">search</span>(<span class="tp">int</span> val) {
+        <span class="tp">Node</span>* curr = head;
+        <span class="kw">while</span> (curr) {
+            <span class="kw">if</span> (curr-&gt;data == val) <span class="kw">return true</span>;
+            curr = curr-&gt;next;
+        }
+        <span class="kw">return false</span>;
+    }
+
+    <span class="cm">// ---- DISPLAY — O(n) ----</span>
+    <span class="tp">void</span> <span class="fn">display</span>() {
+        <span class="tp">Node</span>* curr = head;
+        <span class="kw">while</span> (curr) {
+            cout <span class="op">&lt;&lt;</span> curr-&gt;data <span class="op">&lt;&lt;</span> <span class="st">" -> "</span>;
+            curr = curr-&gt;next;
+        }
+        cout <span class="op">&lt;&lt;</span> <span class="st">"NULL"</span> <span class="op">&lt;&lt;</span> endl;
+    }
+
+    <span class="cm">// ---- DESTRUCTOR — free all nodes ----</span>
+    <span class="op">~</span><span class="fn">SinglyLinkedList</span>() {
+        <span class="kw">while</span> (head) {
+            <span class="tp">Node</span>* temp = head;
+            head = head-&gt;next;
+            <span class="kw">delete</span> temp;
+        }
+    }
+};
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">SinglyLinkedList</span> list;
+
+    list.<span class="fn">insertAtTail</span>(<span class="nm">10</span>);
+    list.<span class="fn">insertAtTail</span>(<span class="nm">20</span>);
+    list.<span class="fn">insertAtTail</span>(<span class="nm">30</span>);
+    list.<span class="fn">display</span>();                <span class="cm">// 10 -> 20 -> 30 -> NULL</span>
+
+    list.<span class="fn">insertAtHead</span>(<span class="nm">5</span>);
+    list.<span class="fn">display</span>();                <span class="cm">// 5 -> 10 -> 20 -> 30 -> NULL</span>
+
+    list.<span class="fn">insertAtPosition</span>(<span class="nm">15</span>, <span class="nm">2</span>);
+    list.<span class="fn">display</span>();                <span class="cm">// 5 -> 10 -> 15 -> 20 -> 30 -> NULL</span>
+
+    list.<span class="fn">deleteByValue</span>(<span class="nm">20</span>);
+    list.<span class="fn">display</span>();                <span class="cm">// 5 -> 10 -> 15 -> 30 -> NULL</span>
+
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Search 15: "</span> <span class="op">&lt;&lt;</span> (list.<span class="fn">search</span>(<span class="nm">15</span>) ? <span class="st">"Found"</span> : <span class="st">"Not found"</span>) <span class="op">&lt;&lt;</span> endl;
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Search 99: "</span> <span class="op">&lt;&lt;</span> (list.<span class="fn">search</span>(<span class="nm">99</span>) ? <span class="st">"Found"</span> : <span class="st">"Not found"</span>) <span class="op">&lt;&lt;</span> endl;
+
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>The core skill is <strong>pointer rewiring</strong>: to insert, you redirect the previous node's <code>next</code> to the new node, and the new node's <code>next</code> to what came after. To delete, you skip over the target node and <code>delete</code> it. Always handle the head-node special case separately, and always free memory with <code>delete</code> to prevent leaks.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: DOUBLY LINKED LIST CODE -->
+  <!-- ============================================================ -->
+  <div class="section" id="dll-code">
+    <div class="section-label">Section 06</div>
+    <h2>Code Implementation — Doubly Linked List</h2>
+
+    <p>The doubly linked list adds a <code>prev</code> pointer, making deletion at a known node O(1) and enabling backward traversal. The trade-off: more pointers to manage on every operation.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="filename">doubly_linked_list.cpp</span>
+      </div>
+<pre><span class="cm">// ============================================================</span>
+<span class="cm">// DOUBLY LINKED LIST — Complete C++ Implementation</span>
+<span class="cm">// ============================================================</span>
+<span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// ---- Node structure: data + two pointers ----</span>
+<span class="kw">struct</span> <span class="tp">DNode</span> {
+    <span class="tp">int</span>    data;
+    <span class="tp">DNode</span>* prev;
+    <span class="tp">DNode</span>* next;
+
+    <span class="fn">DNode</span>(<span class="tp">int</span> val) : data(val), prev(<span class="kw">nullptr</span>), next(<span class="kw">nullptr</span>) {}
+};
+
+<span class="cm">// ---- Doubly Linked List class ----</span>
+<span class="kw">class</span> <span class="tp">DoublyLinkedList</span> {
+<span class="kw">private</span>:
+    <span class="tp">DNode</span>* head;
+    <span class="tp">DNode</span>* tail;
+
+<span class="kw">public</span>:
+    <span class="fn">DoublyLinkedList</span>() : head(<span class="kw">nullptr</span>), tail(<span class="kw">nullptr</span>) {}
+
+    <span class="cm">// ---- INSERT AT HEAD — O(1) ----</span>
+    <span class="tp">void</span> <span class="fn">insertAtHead</span>(<span class="tp">int</span> val) {
+        <span class="tp">DNode</span>* newNode = <span class="kw">new</span> <span class="tp">DNode</span>(val);
+        <span class="kw">if</span> (!head) {
+            head = tail = newNode;   <span class="cm">// First node: it's both head and tail</span>
+            <span class="kw">return</span>;
+        }
+        newNode-&gt;next = head;     <span class="cm">// New node's next → old head</span>
+        head-&gt;prev = newNode;     <span class="cm">// Old head's prev → new node</span>
+        head = newNode;           <span class="cm">// Update head pointer</span>
+    }
+
+    <span class="cm">// ---- INSERT AT TAIL — O(1) ----</span>
+    <span class="cm">// Unlike the singly list, this is O(1) because we track the tail!</span>
+    <span class="tp">void</span> <span class="fn">insertAtTail</span>(<span class="tp">int</span> val) {
+        <span class="tp">DNode</span>* newNode = <span class="kw">new</span> <span class="tp">DNode</span>(val);
+        <span class="kw">if</span> (!tail) {
+            head = tail = newNode;
+            <span class="kw">return</span>;
+        }
+        newNode-&gt;prev = tail;     <span class="cm">// New node's prev → old tail</span>
+        tail-&gt;next = newNode;     <span class="cm">// Old tail's next → new node</span>
+        tail = newNode;           <span class="cm">// Update tail pointer</span>
+    }
+
+    <span class="cm">// ---- INSERT AT POSITION — O(n) ----</span>
+    <span class="tp">void</span> <span class="fn">insertAtPosition</span>(<span class="tp">int</span> val, <span class="tp">int</span> pos) {
+        <span class="kw">if</span> (pos == <span class="nm">0</span>) { <span class="fn">insertAtHead</span>(val); <span class="kw">return</span>; }
+
+        <span class="tp">DNode</span>* curr = head;
+        <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; pos &amp;&amp; curr; i++) {
+            curr = curr-&gt;next;
+        }
+        <span class="kw">if</span> (!curr) {     <span class="cm">// pos is at or past end → insert at tail</span>
+            <span class="fn">insertAtTail</span>(val);
+            <span class="kw">return</span>;
+        }
+        <span class="cm">// Insert BEFORE curr</span>
+        <span class="tp">DNode</span>* newNode = <span class="kw">new</span> <span class="tp">DNode</span>(val);
+        newNode-&gt;prev = curr-&gt;prev;
+        newNode-&gt;next = curr;
+        curr-&gt;prev-&gt;next = newNode;
+        curr-&gt;prev = newNode;
+    }
+
+    <span class="cm">// ---- DELETE BY VALUE — O(n) search + O(1) removal ----</span>
+    <span class="tp">void</span> <span class="fn">deleteByValue</span>(<span class="tp">int</span> val) {
+        <span class="tp">DNode</span>* curr = head;
+
+        <span class="cm">// Search for the node</span>
+        <span class="kw">while</span> (curr &amp;&amp; curr-&gt;data != val) {
+            curr = curr-&gt;next;
+        }
+        <span class="kw">if</span> (!curr) <span class="kw">return</span>;    <span class="cm">// Value not found</span>
+
+        <span class="cm">// Re-link neighbors around the doomed node</span>
+        <span class="kw">if</span> (curr-&gt;prev) curr-&gt;prev-&gt;next = curr-&gt;next;
+        <span class="kw">else</span>            head = curr-&gt;next;  <span class="cm">// Deleting head</span>
+
+        <span class="kw">if</span> (curr-&gt;next) curr-&gt;next-&gt;prev = curr-&gt;prev;
+        <span class="kw">else</span>            tail = curr-&gt;prev;  <span class="cm">// Deleting tail</span>
+
+        <span class="kw">delete</span> curr;
+    }
+
+    <span class="cm">// ---- DISPLAY FORWARD — O(n) ----</span>
+    <span class="tp">void</span> <span class="fn">displayForward</span>() {
+        <span class="tp">DNode</span>* curr = head;
+        <span class="kw">while</span> (curr) {
+            cout <span class="op">&lt;&lt;</span> curr-&gt;data <span class="op">&lt;&lt;</span> <span class="st">" <-> "</span>;
+            curr = curr-&gt;next;
+        }
+        cout <span class="op">&lt;&lt;</span> <span class="st">"NULL"</span> <span class="op">&lt;&lt;</span> endl;
+    }
+
+    <span class="cm">// ---- DISPLAY BACKWARD — O(n) ----</span>
+    <span class="cm">// This is a superpower of doubly linked lists!</span>
+    <span class="tp">void</span> <span class="fn">displayBackward</span>() {
+        <span class="tp">DNode</span>* curr = tail;
+        <span class="kw">while</span> (curr) {
+            cout <span class="op">&lt;&lt;</span> curr-&gt;data <span class="op">&lt;&lt;</span> <span class="st">" <-> "</span>;
+            curr = curr-&gt;prev;
+        }
+        cout <span class="op">&lt;&lt;</span> <span class="st">"NULL"</span> <span class="op">&lt;&lt;</span> endl;
+    }
+
+    <span class="cm">// ---- DESTRUCTOR ----</span>
+    <span class="op">~</span><span class="fn">DoublyLinkedList</span>() {
+        <span class="kw">while</span> (head) {
+            <span class="tp">DNode</span>* temp = head;
+            head = head-&gt;next;
+            <span class="kw">delete</span> temp;
+        }
+    }
+};
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">DoublyLinkedList</span> dll;
+
+    dll.<span class="fn">insertAtTail</span>(<span class="nm">10</span>);
+    dll.<span class="fn">insertAtTail</span>(<span class="nm">20</span>);
+    dll.<span class="fn">insertAtTail</span>(<span class="nm">30</span>);
+    dll.<span class="fn">insertAtHead</span>(<span class="nm">5</span>);
+    dll.<span class="fn">insertAtPosition</span>(<span class="nm">15</span>, <span class="nm">2</span>);
+
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Forward:  "</span>;
+    dll.<span class="fn">displayForward</span>();      <span class="cm">// 5 <-> 10 <-> 15 <-> 20 <-> 30 <-> NULL</span>
+
+    cout <span class="op">&lt;&lt;</span> <span class="st">"Backward: "</span>;
+    dll.<span class="fn">displayBackward</span>();     <span class="cm">// 30 <-> 20 <-> 15 <-> 10 <-> 5 <-> NULL</span>
+
+    dll.<span class="fn">deleteByValue</span>(<span class="nm">15</span>);
+    dll.<span class="fn">deleteByValue</span>(<span class="nm">5</span>);      <span class="cm">// Delete head</span>
+    dll.<span class="fn">deleteByValue</span>(<span class="nm">30</span>);     <span class="cm">// Delete tail</span>
+
+    cout <span class="op">&lt;&lt;</span> <span class="st">"After deletions: "</span>;
+    dll.<span class="fn">displayForward</span>();      <span class="cm">// 10 <-> 20 <-> NULL</span>
+
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Key Takeaway</div>
+      <p>Doubly linked list operations require updating <strong>two pointers per node</strong> instead of one — but the reward is O(1) deletion when you have a direct reference to the node, O(1) tail insertion, and backward traversal. The deletion code elegantly handles all edge cases (head, tail, middle) by checking <code>prev</code> and <code>next</code> before relinking.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7: COMPARISON TABLE -->
+  <!-- ============================================================ -->
+  <div class="section" id="comparison">
+    <div class="section-label">Section 07</div>
+    <h2>Big-O Comparison Table</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Array</th>
+          <th>Singly Linked</th>
+          <th>Doubly Linked</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Access by index</td>
+          <td><span class="complexity fast">O(1)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+        </tr>
+        <tr>
+          <td>Search by value</td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+        </tr>
+        <tr>
+          <td>Insert at beginning</td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+        </tr>
+        <tr>
+          <td>Insert at end</td>
+          <td><span class="complexity fast">O(1)*</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+        </tr>
+        <tr>
+          <td>Insert at middle</td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+        </tr>
+        <tr>
+          <td>Delete at beginning</td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+        </tr>
+        <tr>
+          <td>Delete at end</td>
+          <td><span class="complexity fast">O(1)*</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+        </tr>
+        <tr>
+          <td>Delete known node</td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity slow">O(n)</span></td>
+          <td><span class="complexity fast">O(1)</span></td>
+        </tr>
+        <tr>
+          <td>Memory per element</td>
+          <td>Just the data</td>
+          <td>Data + 1 pointer</td>
+          <td>Data + 2 pointers</td>
+        </tr>
+        <tr>
+          <td>Cache performance</td>
+          <td><span class="fast">Excellent</span></td>
+          <td><span class="slow">Poor</span></td>
+          <td><span class="slow">Poor</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size: 0.88rem; color: var(--text-muted);">* Array O(1) end operations assume there's room and you track the current size. <code>std::vector</code> provides amortized O(1) push_back with occasional O(n) reallocation.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================ -->
+  <!-- SECTION 8: USE CASES -->
+  <!-- ============================================================ -->
+  <div class="section" id="use-cases">
+    <div class="section-label">Section 08</div>
+    <h2>Real-World Use Cases</h2>
+
+    <p>Choosing the right data structure isn't academic — it directly impacts how fast and memory-efficient your software is. Here's when to reach for each one in practice.</p>
+
+    <div class="use-case-grid">
+      <div class="use-case-card">
+        <div class="uc-title">Arrays</div>
+        <ul>
+          <li>Image pixel buffers (row-major grid access)</li>
+          <li>Lookup tables and hash maps (index-based)</li>
+          <li>Audio sample buffers (sequential playback)</li>
+          <li>Matrix math and scientific computing</li>
+          <li>Any fixed-size collection read more than modified</li>
+        </ul>
+      </div>
+      <div class="use-case-card">
+        <div class="uc-title">Singly Linked</div>
+        <ul>
+          <li>Stack implementation (push/pop at head)</li>
+          <li>Chained hash table buckets</li>
+          <li>Simple task queues (FIFO with tail pointer)</li>
+          <li>Polynomial representation in math software</li>
+          <li>Memory-constrained embedded systems</li>
+        </ul>
+      </div>
+      <div class="use-case-card">
+        <div class="uc-title">Doubly Linked</div>
+        <ul>
+          <li>Browser back/forward navigation</li>
+          <li>Undo/redo systems in editors</li>
+          <li>LRU cache eviction (fast delete + move)</li>
+          <li>Music playlist with prev/next track</li>
+          <li>OS process scheduler (round-robin queues)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>How to Decide</h3>
+
+    <p><strong>Default to arrays</strong> (or <code>std::vector</code>) unless you have a specific reason not to. Arrays are simpler, more cache-friendly, and faster for most workloads. Reach for a <strong>singly linked list</strong> when you need frequent insertions/deletions at the front and don't need backward traversal or random access — it uses less memory than its doubly linked sibling. Choose a <strong>doubly linked list</strong> when you need bidirectional traversal, or when you'll be deleting nodes given a direct pointer to them (like in an LRU cache where you keep a map of key → node pointer).</p>
+
+    <div class="analogy">Here's a rough rule of thumb: if you're building something that <em>reads</em> a lot and <em>changes</em> rarely, use an array. If it <em>changes</em> constantly at the ends, use a linked list. If it changes constantly and you need to navigate both directions, use a doubly linked list.</div>
+
+    <div class="summary-box">
+      <div class="summary-title">Final Takeaway</div>
+      <p>There is no universally "best" data structure — only the best one <em>for your specific access pattern</em>. Understanding how arrays, singly linked lists, and doubly linked lists behave in memory is the foundation that lets you make that choice confidently. When in doubt, profile your code. The theory predicts big-O trends, but real-world cache behavior often makes arrays even faster than you'd expect.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Arrays vs Linked Lists — C++ Tutorial &bull; Prepared by <strong>Khaled Sokkar</strong> (Teaching Assistant &amp; Offensive Security Engineer)</p>
+</div>
+
+</body>
+</html>
